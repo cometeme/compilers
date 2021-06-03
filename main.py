@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
     while s.has_next():
         token: Token = s.get_next(output=True)
-        token_output.add_row(token.token_type.name, '' if token.content is None else str(token.content))
+        token_output.add_row(token.token_type.name, "" if token.content is None else str(token.content))
 
     for item in symbol_table.table:
         symbol_table_output.add_row(
