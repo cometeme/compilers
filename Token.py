@@ -20,23 +20,11 @@ class Token_Type(Enum):
 
 class Token:
     token_type: Union[Token_Type, None]
-    content: Union[str, None]
+    content: Union[str, int, None]  # str for name, int for entry
 
     def __init__(self) -> None:
         self.token_type = None  # type of the token
         self.content = None  # detail content (like identifier name or operator type)
 
-    def set_token_type(self, token_type: Token_Type) -> None:
-        self.token_type = token_type
-
-    def set_content(self, content: str) -> None:
-        self.content = content
-
-    def get_token_type(self) -> Union[Token_Type, None]:
-        return self.token_type
-
-    def get_content(self) -> Union[str, None]:
-        return self.content
-
     def __str__(self) -> str:
-        return f"{self.token_type.name}, {self.content}"
+        return f"{self.token_type.name}, {'' if self.content is None else self.content}"

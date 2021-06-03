@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from string import ascii_letters, digits, printable
 
+from Symbol_Table import Symbol_Table, Table_Item, Table_Item_Type
 from Token import Token, Token_Type
 
 
@@ -223,16 +224,18 @@ SCANNER_TRANSITION = {
 
 
 class Scanner:
-    def __init__(self, code: str) -> None:
+    def __init__(self, code: str, symbol_table: Symbol_Table) -> None:
         """init the scanner
 
         Args:
             `code` (str): raw code that needs to be processed
+            `symbol_table` (Symbol_Table): symbol table for storing variables and constants
         """
         self.pnt: int = 0
         self.code: str = code.replace("\n", "").replace("\r", "").strip(" ")  # erase line split
         self.code = self.code + "\0"  # add '\0' at the end for convenience
         self.len: int = len(self.code)
+        self.symbol_table: Symbol_Table = symbol_table
 
     def has_next(self) -> bool:
         """check whether the scanner has next token to output
@@ -252,7 +255,7 @@ class Scanner:
             `Token`: The next token
         """
         current_state: Scanner_State = Scanner_State.START
-        temp: str = ""
+        content: str = ""
         result: Token = Token()
 
         while True:
@@ -265,8 +268,25 @@ class Scanner:
             for pattern, to_state in transition:
                 if cur in pattern:
                     if to_state == Scanner_State.END:
-                        result.set_token_type(STATE_TO_TOKEN[current_state])
-                        result.set_content(temp)
+                        result.token_type = STATE_TO_TOKEN[current_state]
+
+                        if result.token_type in [Token_Type.ID, Token_Type.CONSTANT]:
+                            # for identifier or constant, the content is the entry(index) in symbol table
+                            entry: int = self.symbol_table.find_item_by_name(content)
+                            if entry == -1:
+                                # cannot find, create a new row in symbol table
+                                new_item = Table_Item()
+                                new_item.name = content
+                                new_item.variable = result.token_type == Token_Type.ID
+                                entry = self.symbol_table.add_item(new_item)
+
+                            result.content = entry
+                        elif result.token_type in [Token_Type.ALOP, Token_Type.RELOP]:
+                            # arithmetic operator (+, -, *, /) or relation operator (<, >, <=, >=, ==, !=)
+                            result.content = content
+                        else:
+                            result.content = None
+
                         return result
 
                     next_state = to_state
@@ -282,5 +302,5 @@ class Scanner:
             # step to next state
             current_state = next_state
             if cur != " ":
-                temp += cur
+                content += cur
             self.pnt += 1
