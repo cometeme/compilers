@@ -9,13 +9,6 @@ from Token import Token
 if __name__ == "__main__":
     # init output
     console = Console()
-    token_output = Table(
-        show_header=True,
-        header_style="bold",
-    )
-
-    token_output.add_column("Type", justify="center")
-    token_output.add_column("Content", justify="center")
 
     token_output = Table(
         show_header=True,
