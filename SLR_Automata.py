@@ -52,6 +52,9 @@ class SLR_Automata:
         while True:
             if token not in self.action_table[stack[-1]]:
                 self.output()
+                console.print(f"Current token: {token}")
+                console.print(f"Current stack: {stack}")
+                console.print(f"Action Table [{stack[-1]}]: {self.action_table[stack[-1]]}")
                 print("SLR ERROR")
                 exit(-1)
 
