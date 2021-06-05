@@ -79,8 +79,12 @@ class SLR_Automata:
                 self.output_table.add_row(token, str(stack), action, str(current_production))
 
                 length: int = len(current_production.items)
+
+                # solve for not A → ε
+                if not (current_production.items[0].is_symbol and current_production.items[0].value == "ε"):
+                    stack = stack[:-length]
+
                 reduce_state: str = current_production.from_state
-                stack = stack[:-length]
                 stack.append(self.goto_table[stack[-1]][reduce_state])
                 # TODO, run generation code
             else:
