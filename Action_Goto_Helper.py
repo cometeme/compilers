@@ -37,9 +37,13 @@ def print_action_and_goto(
 
 
 if __name__ == "__main__":
+    with open("action_table_symbols.json", "r") as f:
+        action_table_symbols: List[str] = json.loads(f.read())
+    with open("goto_table_symbols.json", "r") as f:
+        goto_table_symbols: List[str] = json.loads(f.read())
     with open("action_table.json", "r") as f:
         action_table: List[Dict[str, str]] = json.loads(f.read())
     with open("goto_table.json", "r") as f:
         goto_table: List[Dict[str, int]] = json.loads(f.read())
 
-    print_action_and_goto(["id", "+", "*", "(", ")", "$"], ["E", "T", "F"], action_table, goto_table)
+    print_action_and_goto(action_table_symbols, goto_table_symbols, action_table, goto_table)

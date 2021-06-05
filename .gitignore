@@ -4,5 +4,7 @@
 Pipfile
 Pipfile.lock
 *_test.txt
+action_table_symbols.json
+goto_table_symbols.json
 action_table.json
 goto_table.json
