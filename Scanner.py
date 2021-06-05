@@ -1,8 +1,13 @@
 from enum import Enum, auto
 from string import ascii_letters, digits, printable
 
+from rich.console import Console
+from rich.table import Table
+
 from Symbol_Table import Symbol_Table, Table_Item, Table_Item_Type
 from Token import Token, Token_Type
+
+console = Console()
 
 
 class Scanner_State(Enum):
@@ -85,7 +90,7 @@ STATE_TO_TOKEN = {
     Scanner_State.FLO: Token_Type.ID,
     Scanner_State.FLOA: Token_Type.ID,
     Scanner_State.FLOAT: Token_Type.FLOAT,
-    Scanner_State.NUMBER: Token_Type.CONSTANT,
+    Scanner_State.NUMBER: Token_Type.CONST,
 }
 
 
@@ -224,6 +229,11 @@ SCANNER_TRANSITION = {
 
 
 class Scanner:
+    pnt: int
+    code: str
+    length: int
+    symbol_table: Symbol_Table
+
     def __init__(self, code: str, symbol_table: Symbol_Table) -> None:
         """init the scanner
 
@@ -231,11 +241,33 @@ class Scanner:
             `code` (str): raw code that needs to be processed
             `symbol_table` (Symbol_Table): symbol table for storing variables and constants
         """
-        self.pnt: int = 0
-        self.code: str = code.replace("\n", "").replace("\r", "").strip(" ")  # erase line split
+        self.pnt = 0
+        self.code = code.replace("\n", "").replace("\r", "").strip(" ")  # erase line split
         self.code = self.code + "\0"  # add '\0' at the end for convenience
-        self.len: int = len(self.code)
-        self.symbol_table: Symbol_Table = symbol_table
+        self.length = len(self.code)
+        self.symbol_table = symbol_table
+        # init state output table
+        self.state_output = Table(
+            show_header=True,
+            header_style="bold",
+        )
+        self.state_output.add_column("Pointer", justify="center")
+        self.state_output.add_column("Current Character", justify="center")
+        self.state_output.add_column("State Transfer", justify="left")
+        # init token output table
+        self.token_output = Table(
+            show_header=True,
+            header_style="bold",
+        )
+        self.token_output.add_column("Type", justify="center")
+        self.token_output.add_column("Content", justify="center")
+
+    def output(self) -> None:
+        self.symbol_table.output()
+        console.print("Scanner States:", style="bold")
+        console.print(self.state_output)
+        console.print("Tokens:", style="bold")
+        console.print(self.token_output)
 
     def has_next(self) -> bool:
         """check whether the scanner has next token to output
@@ -243,9 +275,9 @@ class Scanner:
         Returns:
             `bool`: `True` if the scanner have next token
         """
-        return self.pnt < self.len - 1
+        return self.pnt < self.length - 1
 
-    def get_next(self, output: bool = True) -> Token:
+    def get_next(self) -> Token:
         """get next token
 
         Args:
@@ -270,7 +302,7 @@ class Scanner:
                     if to_state == Scanner_State.END:
                         result.token_type = STATE_TO_TOKEN[current_state]
 
-                        if result.token_type in [Token_Type.ID, Token_Type.CONSTANT]:
+                        if result.token_type in [Token_Type.ID, Token_Type.CONST]:
                             # for identifier or constant, the content is the entry(index) in symbol table
                             entry: int = self.symbol_table.find_item_by_name(content)
                             if entry == -1:
@@ -287,15 +319,18 @@ class Scanner:
                         else:
                             result.content = None
 
+                        self.token_output.add_row(
+                            result.token_type.name, "" if result.content is None else str(result.content)
+                        )
                         return result
 
                     next_state = to_state
                     break
 
-            if output:
-                print(f"pnt = {self.pnt}, cur = {cur}\t{current_state} -> {next_state}")
+            self.state_output.add_row(str(self.pnt), cur, f"{current_state} -> {next_state}")
 
             if next_state == Scanner_State.ERROR:
+                self.output()
                 print("ERROR WHEN GETTING NEXT TOKEN!")
                 exit(-1)
 

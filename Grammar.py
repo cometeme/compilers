@@ -1,7 +1,5 @@
 from typing import List
 
-from Token import Token_Type
-
 
 class Grammar_Item:
     is_symbol: bool  # True for terminal symbol, False for Variable
@@ -22,6 +20,9 @@ class Grammar_Production:
 
     def add(self, is_symbol: bool, value: str) -> None:
         self.items.append(Grammar_Item(is_symbol, value))
+
+    def __str__(self) -> str:
+        return f"{self.from_state} → " + " ".join([item.value for item in self.items])
 
 
 class Grammar:
