@@ -262,10 +262,11 @@ class Scanner:
         self.token_output.add_column("Type", justify="center")
         self.token_output.add_column("Content", justify="center")
 
-    def output(self) -> None:
-        self.symbol_table.output()
+    def print_states(self) -> None:
         console.print("Scanner States:", style="bold")
         console.print(self.state_output)
+
+    def print_tokens(self) -> None:
         console.print("Tokens:", style="bold")
         console.print(self.token_output)
 
@@ -330,7 +331,8 @@ class Scanner:
             self.state_output.add_row(str(self.pnt), cur, f"{current_state.name} -> {next_state.name}")
 
             if next_state == Scanner_State.ERROR:
-                self.output()
+                self.print_tokens()
+                self.print_states()
                 print("ERROR WHEN GETTING NEXT TOKEN!")
                 exit(-1)
 

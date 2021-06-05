@@ -1,11 +1,11 @@
 import json
+from copy import deepcopy
 from typing import Dict, List
 
 from rich.console import Console
 from rich.table import Table
 
 from Grammar import Grammar
-from copy import deepcopy
 
 console = Console()
 
@@ -86,22 +86,15 @@ class SLR_Table:
         self.first = self.first_set()
         self.follow = self.follow_set()
 
-        console.print("First:", style="bold")
+    def print_first_set(self) -> None:
+        console.print("First Set:", style="bold")
         console.print(self.first)
-        console.print("Follow:", style="bold")
+
+    def print_follow_set(self) -> None:
+        console.print("Follow Set:", style="bold")
         console.print(self.follow)
 
-    def get_item(self, item: tuple) -> str:
-        production = self.grammar.production_list[item[0]]
-        right = [it.value for it in production.items]
-
-        if "ε" in right:  # remove ε
-            right.remove("ε")
-
-        right.insert(item[1], ".")
-        return f"{production.from_state} → {' '.join(right)}"
-
-    def show_closure_set(self):
+    def print_closure_set(self):
         console.print(f"Num of states: {len(self.C.clourse_set)}", style="bold")
         for index, clourse in enumerate(self.C.clourse_set):
             output_table = Table(
@@ -113,6 +106,16 @@ class SLR_Table:
                 output_table.add_row(self.get_item(item))
             # print(clourse.transfer)
             console.print(output_table)
+
+    def get_item(self, item: tuple) -> str:
+        production = self.grammar.production_list[item[0]]
+        right = [it.value for it in production.items]
+
+        if "ε" in right:  # remove ε
+            right.remove("ε")
+
+        right.insert(item[1], ".")
+        return f"{production.from_state} → {' '.join(right)}"
 
     def contain_varepsilon(self, symbol: str) -> bool:
         contain = False
@@ -289,7 +292,6 @@ class SLR_Table:
         goto = list()
 
         # C = self.gen_clourse_set([(0, 0)])
-        self.show_closure_set()
 
         for i in range(len(self.C.clourse_set)):
             action.append(dict())

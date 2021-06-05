@@ -44,7 +44,7 @@ class Grammar:
         with open(path, "r") as f:
             blocks = f.read().split("\n@ ")
 
-        symbol_lines: List[str] = blocks[0].split('\n')
+        symbol_lines: List[str] = blocks[0].split("\n")
         blocks: List[str] = blocks[1:]
 
         self.terminal_symbols = symbol_lines[0].split(" ")[1:]
@@ -52,13 +52,13 @@ class Grammar:
         self.start_symbol = self.variable_symbols[0]
 
         for block in blocks:
-            lines = block.split('\n')
+            lines = block.split("\n")
             production_line = lines[0]
             code_lines = lines[1:] if len(lines) > 1 else []
             from_state, production = production_line.split(" → ")
 
             current_grammar_production = Grammar_Production(from_state)
-            current_grammar_production.code = '\n'.join(code_lines)
+            current_grammar_production.code = "\n".join(code_lines)
             items = production.split(" ")
 
             for item in items:

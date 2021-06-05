@@ -19,4 +19,5 @@ if __name__ == "__main__":
         token: Token = scanner.get_next()
 
     # print results
-    scanner.output()
+    scanner.print_states()
+    scanner.print_tokens()

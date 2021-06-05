@@ -28,30 +28,43 @@ class SLR_Automata:
         with open("goto_table.json", "r") as f:
             self.goto_table = json.loads(f.read())
 
-        # init output table
-        self.output_table = Table(
+        # init state output
+        self.state_output = Table(
             show_header=True,
             header_style="bold",
         )
 
-        self.output_table.add_column("Token", justify="center")
-        self.output_table.add_column("Stack", justify="left")
-        self.output_table.add_column("Action", justify="center")
-        self.output_table.add_column("Production", justify="left")
+        self.state_output.add_column("Token", justify="center")
+        self.state_output.add_column("Stack", justify="left")
+        self.state_output.add_column("Action", justify="center")
+        self.state_output.add_column("Production", justify="left")
 
-    def output(self) -> None:
-        self.scanner.output()
+        # init code output
+        self.code_output = Table(
+            show_header=True,
+            header_style="bold",
+        )
+
+        self.code_output.add_column("Line", justify="center")
+        self.code_output.add_column("Code", justify="left")
+
+    def print_state(self) -> None:
         console.print("SLR State:", style="bold")
-        console.print(self.output_table)
+        console.print(self.state_output)
+
+    def print_code(self) -> None:
+        console.print("Code:", style="bold")
+        console.print(self.code_output)
 
     def run(self) -> None:
-        stack = [0]
-        token = self.scanner.get_next().name() if self.scanner.has_next() else "$"
+        stack: List[int] = [0]
+        token: str = self.scanner.get_next().name() if self.scanner.has_next() else "$"
+        current_line: int = 0
 
         # run automata
         while True:
             if token not in self.action_table[stack[-1]]:
-                self.output()
+                self.print_state()
                 console.print(f"Current token: {token}")
                 console.print(f"Current stack: {stack}")
                 console.print(f"Action Table [{stack[-1]}]: {self.action_table[stack[-1]]}")
@@ -61,7 +74,7 @@ class SLR_Automata:
             action: str = self.action_table[stack[-1]][token]
 
             if action == "acc":
-                self.output_table.add_row(token, str(stack), action, "")
+                self.state_output.add_row(token, str(stack), action, "")
                 break
 
             action_type: str = action[0]
@@ -69,14 +82,14 @@ class SLR_Automata:
 
             if action_type == "s":
                 # shift in next state
-                self.output_table.add_row(token, str(stack), action, "")
+                self.state_output.add_row(token, str(stack), action, "")
 
                 stack.append(action_value)
                 token = self.scanner.get_next().name() if self.scanner.has_next() else "$"
             elif action_type == "r":
                 # reduced by production
                 current_production: Grammar_Production = self.grammar.production_list[action_value]
-                self.output_table.add_row(token, str(stack), action, str(current_production))
+                self.state_output.add_row(token, str(stack), action, str(current_production))
 
                 length: int = len(current_production.items)
 
@@ -86,10 +99,10 @@ class SLR_Automata:
 
                 reduce_state: str = current_production.from_state
                 stack.append(self.goto_table[stack[-1]][reduce_state])
-                
+
                 # run generation code
                 exec(current_production.code)
             else:
-                self.output()
+                self.print_state()
                 print(f"Unknown action type {action_type}!")
                 exit(-1)
