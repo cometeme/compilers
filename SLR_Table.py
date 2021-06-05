@@ -5,6 +5,7 @@ from rich.console import Console
 from rich.table import Table
 
 from Grammar import Grammar
+from copy import deepcopy
 
 console = Console()
 
@@ -74,18 +75,23 @@ class SLR_Table:
         self.start_symbol = grammar.start_symbol
         self.action_symbols = grammar.terminal_symbols
         self.goto_symbols = grammar.variable_symbols[1:]
-        self.all_symbols = self.action_symbols + self.goto_symbols
+        self.all_symbols = self.goto_symbols + self.action_symbols
 
         self.all_items = list()
         self.first_items = dict()  # item with first dot, key is from_state
         self.gen_all_items()
 
-        self.gen_clourse_set([(0, 0)])
+        self.C = self.gen_clourse_set([(0, 0)]) # clourse set
 
         self.first = self.first_set()
         self.follow = self.follow_set()
 
-    def show_item(self, item: tuple):
+        console.print("First:", style="bold")
+        console.print(self.first)
+        console.print("Follow:", style="bold")
+        console.print(self.follow)
+
+    def get_item(self, item: tuple) -> str:
         production = self.grammar.production_list[item[0]]
         right = [it.value for it in production.items]
 
@@ -93,7 +99,20 @@ class SLR_Table:
             right.remove("ε")
 
         right.insert(item[1], ".")
-        print(production.from_state, " → ", " ".join(right))
+        return f"{production.from_state} → {' '.join(right)}"
+    
+    def show_closure_set(self):
+        console.print(f"Num of states: {len(self.C.clourse_set)}", style="bold")
+        for index, clourse in enumerate(self.C.clourse_set):
+            output_table = Table(
+                show_header=True,
+                header_style="bold",
+            )
+            output_table.add_column(f"I{clourse.index}", justify="left")
+            for item in clourse.closure_items:
+                output_table.add_row(self.get_item(item))
+            # print(clourse.transfer)
+            console.print(output_table)
 
     def contain_varepsilon(self, symbol: str) -> bool:
         contain = False
@@ -121,6 +140,9 @@ class SLR_Table:
     def first_set(self):
         first = dict()
 
+        for item in self.action_symbols:
+            first[item] = item
+
         for from_state in self.first_items.keys():
             indices = [production[0] for production in self.first_items[from_state]]  # production indices
             first[from_state] = set()
@@ -144,6 +166,8 @@ class SLR_Table:
             for index in indices:
                 items = self.grammar.production_list[index].items
                 length = len(items)
+                if items[0].value == "ε":
+                    add_varepsilon = True
                 # solve ε production to First(from_state)
                 cur = 0
                 while cur < length and not items[cur].is_symbol:
@@ -174,7 +198,10 @@ class SLR_Table:
                     if cur + 1 < length and items[cur + 1].is_symbol:  # B→αAa ,a is end symbol
                         follow[items[cur].value].add(items[cur + 1].value)
                     elif cur + 1 < length and not items[cur + 1].is_symbol:  # B→αAX ,X is not end symbol
-                        follow[items[cur].value] |= self.first[items[cur + 1].value].remove("ε")
+                        first_of_next = deepcopy(self.first[items[cur + 1].value])
+                        if "ε" in first_of_next:
+                            first_of_next.remove("ε")
+                        follow[items[cur].value] |= first_of_next
                 cur += 1
 
         for production in self.grammar.production_list:
@@ -261,23 +288,30 @@ class SLR_Table:
         action = list()
         goto = list()
 
-        C = self.gen_clourse_set([(0, 0)])
+        # C = self.gen_clourse_set([(0, 0)])
+        self.show_closure_set()
 
-        for i in range(len(C.clourse_set)):
+        for i in range(len(self.C.clourse_set)):
             action.append(dict())
             goto.append(dict())
 
-        for clourse in C.clourse_set:
+        for clourse in self.C.clourse_set:
             for item in clourse.closure_items:
                 production = self.grammar.production_list[item[0]]
 
                 if item[1] != len(production.items):  # dot not at the end
                     symbol = production.items[item[1]]
+
+                    # solve A → ε
+                    if symbol.is_symbol and symbol.value == "ε":
+                        for f in self.follow[production.from_state]:
+                            action[clourse.get_index()][f] = "r" + str(item[0])
+
                     # get next closure index
                     next_index = clourse.transfer.get(symbol.value)
 
                     if next_index is not None:
-                        if symbol.is_symbol:
+                        if symbol.is_symbol and symbol.value != "ε":
                             action[clourse.get_index()][symbol.value] = "s" + str(next_index)
                         else:
                             goto[clourse.get_index()][symbol.value] = next_index
@@ -330,7 +364,7 @@ def print_slr_table(grammar: Grammar) -> None:
 
 if __name__ == "__main__":
     grammar = Grammar()
-    grammar.read("grammar_test.txt")
+    grammar.read("grammar.txt")
 
     slr = SLR_Table(grammar)
     slr.analysis_table()
