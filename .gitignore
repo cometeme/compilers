@@ -1,5 +1,9 @@
 **/.DS_Store
 **/__pycache__
 **/.vscode
+**/.idea
 Pipfile
 Pipfile.lock
+*_test.txt
+action_table.json
+goto_table.json

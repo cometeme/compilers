@@ -1,6 +1,11 @@
 from enum import Enum, auto
 from typing import List, Union
 
+from rich.console import Console
+from rich.table import Table
+
+console = Console()
+
 
 class Table_Item_Type(Enum):
     INT = auto()
@@ -28,6 +33,23 @@ class Symbol_Table:
     def __init__(self) -> None:
         self.size = 0
         self.table = list()
+
+    def output(self) -> None:
+        output_table = Table(
+            show_header=True,
+            header_style="bold",
+        )
+        output_table.add_column("Name", justify="center")
+        output_table.add_column("Var/Const", justify="center")
+        output_table.add_column("Type", justify="center")
+
+        for item in self.table:
+            output_table.add_row(
+                item.name, "Var" if item.variable else "Const", "" if item.item_type is None else item.item_type.name
+            )
+
+        console.print("Symbol Table:", style="bold")
+        console.print(output_table)
 
     def get_size(self) -> int:
         return self.size
