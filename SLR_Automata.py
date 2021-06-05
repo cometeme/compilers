@@ -6,7 +6,7 @@ from rich.table import Table
 
 from Grammar import Grammar, Grammar_Production
 from Scanner import Scanner
-from Symbol_Table import Symbol_Table, item_type_translate
+from Symbol_Table import Symbol_Table, Table_Item, item_type_translate
 from Token import Token, Token_Type
 
 console = Console()
@@ -62,7 +62,14 @@ class SLR_Automata:
         self.code_output.add_row(str(self.current_line), code)
         self.current_line += 1
 
-    def run(self) -> None:
+    def gen_variable(self, name: str) -> int:
+        item = Table_Item()
+        item.name = name
+        item.variable = True
+        entry = self.symbol_table.add_item(item)
+        return entry
+
+    def run(self, debug: bool = True) -> None:
         stack: List[int] = [0]
         attributes: List[Dict[str, Union[str, int]]] = [dict()]
         token: Union[Token, None] = self.scanner.get_next() if self.scanner.has_next() else None
@@ -82,6 +89,12 @@ class SLR_Automata:
                 exit(-1)
 
             action: str = self.action_table[stack[-1]][token_string]
+
+            if debug:
+                console.print(f"\ntoken: {stack}")
+                console.print(f"stack: {stack}")
+                console.print(f"attributes: {attributes}")
+                console.print(f"action: {action}")
 
             if action == "acc":
                 self.state_output.add_row(token_string, str(stack), action, "")
@@ -108,6 +121,10 @@ class SLR_Automata:
                 current_production: Grammar_Production = self.grammar.production_list[action_value]
                 self.state_output.add_row(token_string, str(stack), action, str(current_production))
 
+                if debug:
+                    console.print(f"production: {current_production}")
+                    print(f"code:\n{current_production.code}\n")
+
                 length: int = len(current_production.items)
                 current_attribute = dict()
 
@@ -117,11 +134,9 @@ class SLR_Automata:
                 except Exception as e:
                     console.print("Execute Generation Faild!", style="bold red")
                     self.print_state()
-                    console.print(f"stack:\n{stack}\n\n")
-                    console.print(f"attributes:\n{attributes}\n\n")
+                    print(f"Production: {current_production}\n\n")
                     print(f"code:\n\n{current_production.code}\n")
-                    print(e)
-                    exit(-1)
+                    exec(current_production.code)
 
                 # solve for not A → ε
                 if not (current_production.items[0].is_symbol and current_production.items[0].value == "ε"):

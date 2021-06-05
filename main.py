@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     # init slr automata
     slr_automata = SLR_Automata(scanner, grammar)
-    slr_automata.run()
+    slr_automata.run(debug=False)
 
     # output result'
     while True:
