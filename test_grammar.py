@@ -7,6 +7,7 @@ console = Console()
 
 grammar = Grammar()
 grammar.read("grammar.txt")
+grammar.save()
 
 console.print(f"Terminal Symbols: {grammar.terminal_symbols}")
 console.print(f"Variable Symbols: {grammar.variable_symbols}")

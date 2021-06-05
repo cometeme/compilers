@@ -40,6 +40,15 @@ class Grammar:
     def __init__(self) -> None:
         self.production_list = list()
 
+    def save(self) -> None:
+        with open("output/grammar.txt", "w") as f:
+            f.write(f"Start Symbol: {self.start_symbol}\n")
+            f.write(f"Terminal Symbols: {' '.join(self.terminal_symbols)}\n")
+            f.write(f"Variable Symbols: {' '.join(self.variable_symbols)}\n")
+            f.write("Productions:\n")
+            for production in self.production_list:
+                f.write(f"{production}\n")
+
     def read(self, path: str) -> None:
         with open(path, "r") as f:
             blocks = f.read().split("\n@ ")

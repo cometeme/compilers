@@ -1,5 +1,7 @@
+import csv
 import json
 from copy import deepcopy
+from pprint import pformat
 from typing import Dict, List
 
 from rich.console import Console
@@ -106,6 +108,26 @@ class SLR_Table:
                 output_table.add_row(self.get_item(item))
             # print(clourse.transfer)
             console.print(output_table)
+
+    def save(self) -> None:
+        with open("output/first_set.txt", "w") as f:
+            first = pformat(self.first, indent=2)
+            f.write(first)
+
+        with open("output/follow_set.txt", "w") as f:
+            follow = pformat(self.follow, indent=2)
+            f.write(follow)
+
+        with open("output/closure_set.txt", "w") as f:
+            result: Dict[str, List[str]] = dict()
+            for index, clourse in enumerate(self.C.clourse_set):
+                result[f"I{clourse.index}"] = []
+                for item in clourse.closure_items:
+                    result[f"I{clourse.index}"].append(self.get_item(item))
+            result_string = pformat(result, indent=2)
+            f.write(result_string)
+
+        save_slr_table(self.grammar)
 
     def get_item(self, item: tuple) -> str:
         production = self.grammar.production_list[item[0]]
@@ -326,10 +348,10 @@ class SLR_Table:
                             action[clourse.get_index()][f] = "r" + str(item[0])
 
         with open("action_table.json", "w") as f:
-            f.write(json.dumps(action))
+            f.write(json.dumps(action, indent=2))
 
         with open("goto_table.json", "w") as f:
-            f.write(json.dumps(goto))
+            f.write(json.dumps(goto, indent=2))
 
 
 def print_slr_table(grammar: Grammar) -> None:
@@ -362,6 +384,29 @@ def print_slr_table(grammar: Grammar) -> None:
 
     console.print("SLR Table (Action/Goto Table):", style="bold")
     console.print(output_table)
+
+
+def save_slr_table(grammar: Grammar) -> None:
+    action_table_symbols: List[str] = grammar.terminal_symbols
+    goto_table_symbols: List[str] = grammar.variable_symbols[1:]
+
+    with open("action_table.json", "r") as f:
+        action_table: List[Dict[str, str]] = json.loads(f.read())
+    with open("goto_table.json", "r") as f:
+        goto_table: List[Dict[str, int]] = json.loads(f.read())
+
+    with open("output/slr_table.csv", "w") as f:
+        writter = csv.writer(f)
+        header: List[str] = ["State"] + action_table_symbols + goto_table_symbols
+        writter.writerow(header)
+
+        for state, action_row, goto_row in zip(range(len(action_table)), action_table, goto_table):
+            output_row: List[str] = [str(state)]
+            for action_symbol in action_table_symbols:
+                output_row.append(action_row.get(action_symbol, ""))
+            for goto_symbol in goto_table_symbols:
+                output_row.append(str(goto_row.get(goto_symbol, "")))
+            writter.writerow(output_row)
 
 
 if __name__ == "__main__":

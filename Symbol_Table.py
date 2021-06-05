@@ -1,3 +1,4 @@
+import csv
 from enum import Enum, auto
 from typing import List, Union
 
@@ -53,6 +54,19 @@ class Symbol_Table:
 
         console.print("Symbol Table:", style="bold")
         console.print(output_table)
+
+    def save(self) -> None:
+        with open("output/symbol_table.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Name", "Var/Const", "Type"])
+            for item in self.table:
+                writer.writerow(
+                    [
+                        item.name,
+                        "Var" if item.variable else "Const",
+                        "" if item.item_type is None else item.item_type.name,
+                    ]
+                )
 
     def get_size(self) -> int:
         return self.size

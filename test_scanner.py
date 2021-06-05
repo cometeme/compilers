@@ -21,3 +21,6 @@ if __name__ == "__main__":
     # print results
     scanner.print_states()
     scanner.print_tokens()
+
+    symbol_table.save()
+    scanner.save()

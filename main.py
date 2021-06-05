@@ -46,6 +46,13 @@ if __name__ == "__main__":
     slr_automata = SLR_Automata(scanner, grammar)
     slr_automata.run(debug=False)
 
+    # save result
+    grammar.save()
+    symbol_table.save()
+    scanner.save()
+    slr_table.save()
+    slr_automata.save()
+
     # output result'
     while True:
         console.print(message)

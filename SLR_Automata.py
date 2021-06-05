@@ -1,3 +1,4 @@
+import csv
 import json
 from typing import Dict, List, Union
 
@@ -18,6 +19,8 @@ class SLR_Automata:
     grammar: Grammar
     action_table: List[Dict[str, str]] = list()
     goto_table: List[Dict[str, int]] = list()
+    state_output: List[List[str]]
+    code_output: List[List[str]]
     current_line: int
 
     def __init__(self, scanner: Scanner, grammar: Grammar) -> None:
@@ -31,35 +34,55 @@ class SLR_Automata:
             self.goto_table = json.loads(f.read())
 
         # init state output
-        self.state_output = Table(
-            show_header=True,
-            header_style="bold",
-        )
-
-        self.state_output.add_column("Token", justify="center")
-        self.state_output.add_column("Stack", justify="left")
-        self.state_output.add_column("Action", justify="center")
-        self.state_output.add_column("Production", justify="left")
-
-        # init code output
-        self.code_output = Table(
-            show_header=True,
-            header_style="bold",
-        )
-
-        self.code_output.add_column("Line", justify="center")
-        self.code_output.add_column("Code", justify="left")
+        self.state_output = []
+        self.code_output = []
 
     def print_state(self) -> None:
+        output_table = Table(
+            show_header=True,
+            header_style="bold",
+        )
+
+        output_table.add_column("Token", justify="center")
+        output_table.add_column("Stack", justify="left")
+        output_table.add_column("Action", justify="center")
+        output_table.add_column("Production", justify="left")
+
+        for row in self.state_output:
+            output_table.add_row(*row)
+
         console.print("SLR State:", style="bold")
-        console.print(self.state_output)
+        console.print(output_table)
 
     def print_code(self) -> None:
+        output_table = Table(
+            show_header=True,
+            header_style="bold",
+        )
+
+        output_table.add_column("Line", justify="center")
+        output_table.add_column("Code", justify="left")
+
+        for row in self.code_output:
+            output_table.add_row(*row)
+
         console.print("Code:", style="bold")
-        console.print(self.code_output)
+        console.print(output_table)
+
+    def save(self) -> None:
+        with open("output/slr_states.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Token", "Stack", "Action", "Production"])
+            for row in self.state_output:
+                writer.writerow(row)
+        with open("output/code.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Line", "Code"])
+            for row in self.code_output:
+                writer.writerow(row)
 
     def gen_code(self, code: str) -> None:
-        self.code_output.add_row(str(self.current_line), code)
+        self.code_output.append([str(self.current_line), code])
         self.current_line += 1
 
     def gen_variable(self, name: str) -> int:
@@ -97,7 +120,7 @@ class SLR_Automata:
                 console.print(f"action: {action}")
 
             if action == "acc":
-                self.state_output.add_row(token_string, str(stack), action, "")
+                self.state_output.append([token_string, str(stack), action, ""])
                 break
 
             action_type: str = action[0]
@@ -105,7 +128,7 @@ class SLR_Automata:
 
             if action_type == "s":
                 # shift in next state
-                self.state_output.add_row(token_string, str(stack), action, "")
+                self.state_output.append([token_string, str(stack), action, ""])
 
                 stack.append(action_value)
 
@@ -119,7 +142,7 @@ class SLR_Automata:
             elif action_type == "r":
                 # reduced by production
                 current_production: Grammar_Production = self.grammar.production_list[action_value]
-                self.state_output.add_row(token_string, str(stack), action, str(current_production))
+                self.state_output.append([token_string, str(stack), action, str(current_production)])
 
                 if debug:
                     console.print(f"production: {current_production}")
