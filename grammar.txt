@@ -1,4 +1,4 @@
-id const int float if else while > < == = + - * / ( ) ; ε
+id const int float if else while > < == = + - * / ( ) ; $
 P' P D S L C E T F
 
 P' → P
@@ -7,11 +7,12 @@ D → L id ; D
 D → ε
 L → int
 L → float
-S → id = E ;
+S → S ; S
+S → ε
+S → id = E
 S → if ( C ) S
 S → if ( C ) S else S
 S → while ( C ) S
-S → S ; S
 C → E > E
 C → E < E
 C → E == E
