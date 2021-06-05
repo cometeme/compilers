@@ -55,7 +55,7 @@ class Grammar:
             items = production.split(" ")
 
             for item in items:
-                if item in self.terminal_symbols:
+                if item in self.terminal_symbols + ["ε"]:
                     current_grammar_production.add(True, item)
                 elif item in self.variable_symbols:
                     current_grammar_production.add(False, item)
