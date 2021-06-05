@@ -333,7 +333,7 @@ class Scanner:
             if next_state == Scanner_State.ERROR:
                 self.print_tokens()
                 self.print_states()
-                print("ERROR WHEN GETTING NEXT TOKEN!")
+                console.print("ERROR WHEN GETTING NEXT TOKEN!", style="bold red")
                 exit(-1)
 
             # step to next state

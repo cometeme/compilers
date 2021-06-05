@@ -12,6 +12,9 @@ class Table_Item_Type(Enum):
     FLOAT = auto()
 
 
+item_type_translate = {"int": Table_Item_Type.INT, "float": Table_Item_Type.FLOAT}
+
+
 class Table_Item:
     name: Union[str, None]
     variable: Union[bool, None]  # True for variable, False for constant
@@ -65,10 +68,3 @@ class Symbol_Table:
         self.size += 1
         self.table.append(item)
         return self.size - 1
-
-    def get_item_by_index(self, idx: int) -> Table_Item:
-        if idx < 0 or idx > self.size:
-            print("Index out of range in Symbol Table")
-            exit(-1)
-
-        return self.table[idx]

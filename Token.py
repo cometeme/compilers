@@ -26,7 +26,7 @@ class Token:
         self.token_type = None  # type of the token
         self.content = None  # detail content (like identifier name or operator type)
 
-    def name(self) -> str:
+    def to_string(self) -> str:
         if self.token_type in [Token_Type.ALOP, Token_Type.RELOP]:
             return str(self.content)
         elif self.token_type == Token_Type.ASSIGN:

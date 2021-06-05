@@ -360,7 +360,7 @@ def print_slr_table(grammar: Grammar) -> None:
             output_row.append(str(goto_row.get(goto_symbol, "")))
         output_table.add_row(*output_row)
 
-    console.print("Action/Goto Table:", style="bold")
+    console.print("SLR Table (Action/Goto Table):", style="bold")
     console.print(output_table)
 
 

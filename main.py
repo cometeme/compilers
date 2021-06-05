@@ -35,7 +35,8 @@ if __name__ == "__main__":
 
     # init scanner
     with open("input.txt", "r") as f:
-        scanner = Scanner(f.read(), symbol_table)
+        code = f.read()
+    scanner = Scanner(code, symbol_table)
 
     # generate and print slr table
     slr_table = SLR_Table(grammar)
@@ -69,9 +70,8 @@ if __name__ == "__main__":
                 console.print("")
         elif input_string == "1":
             # Input Code
-            console.print(f"Code:", style="bold")
-            with open("input.txt", "r") as f:
-                print(f.read())
+            console.print(f"Input Code:", style="bold")
+            print(code)
         elif input_string == "2":
             # Scanner States
             scanner.print_states()
