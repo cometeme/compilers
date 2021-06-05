@@ -17,10 +17,12 @@ class Grammar_Item:
 class Grammar_Production:
     from_state: str
     items: List[Grammar_Item]
+    code: str
 
     def __init__(self, from_state: str) -> None:
         self.from_state = from_state
         self.items = list()
+        self.code = ""
 
     def add(self, is_symbol: bool, value: str) -> None:
         self.items.append(Grammar_Item(is_symbol, value))
@@ -40,18 +42,23 @@ class Grammar:
 
     def read(self, path: str) -> None:
         with open(path, "r") as f:
-            lines = f.read().split("\n")
+            blocks = f.read().split("\n@ ")
 
-        self.terminal_symbols = lines[0].split(" ")
-        self.variable_symbols = lines[1].split(" ")
+        symbol_lines: List[str] = blocks[0].split('\n')
+        blocks: List[str] = blocks[1:]
+
+        self.terminal_symbols = symbol_lines[0].split(" ")[1:]
+        self.variable_symbols = symbol_lines[1].split(" ")[1:]
         self.start_symbol = self.variable_symbols[0]
 
-        lines = lines[3:]
-
-        for line in lines:
-            from_state, production = line.split(" → ")
+        for block in blocks:
+            lines = block.split('\n')
+            production_line = lines[0]
+            code_lines = lines[1:] if len(lines) > 1 else []
+            from_state, production = production_line.split(" → ")
 
             current_grammar_production = Grammar_Production(from_state)
+            current_grammar_production.code = '\n'.join(code_lines)
             items = production.split(" ")
 
             for item in items:

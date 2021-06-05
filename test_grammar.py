@@ -16,8 +16,10 @@ for production in grammar.production_list:
 
     for item in production.items:
         if item.is_symbol:
-            console.print(f" [bold red]{item.value}[/bold red]", end="")
+            console.print(f" {item.value}", style="bold red", end="")
         else:
             console.print(f" {item.value}", end="")
 
     console.print("")
+    if production.code != "":
+        console.print(production.code, end="\n\n")

@@ -86,7 +86,9 @@ class SLR_Automata:
 
                 reduce_state: str = current_production.from_state
                 stack.append(self.goto_table[stack[-1]][reduce_state])
-                # TODO, run generation code
+                
+                # run generation code
+                exec(current_production.code)
             else:
                 self.output()
                 print(f"Unknown action type {action_type}!")
