@@ -27,9 +27,9 @@ def print_action_and_goto(
     for state, action_row, goto_row in zip(range(len(action_table)), action_table, goto_table):
         output_row: List[str] = [str(state)]
         for action_symbol in action_table_symbol_list:
-            output_row.append(action_table[state].get(action_symbol, ""))
+            output_row.append(action_row.get(action_symbol, ""))
         for goto_symbol in goto_table_symbol_list:
-            output_row.append(str(goto_table[state].get(goto_symbol, "")))
+            output_row.append(str(goto_row.get(goto_symbol, "")))
         output_table.add_row(*output_row)
 
     console.print("Action/Goto Table:", style="bold")
