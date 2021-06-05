@@ -81,7 +81,7 @@ class SLR_Table:
         self.first_items = dict()  # item with first dot, key is from_state
         self.gen_all_items()
 
-        self.C = self.gen_clourse_set([(0, 0)]) # clourse set
+        self.C = self.gen_clourse_set([(0, 0)])  # clourse set
 
         self.first = self.first_set()
         self.follow = self.follow_set()
@@ -100,7 +100,7 @@ class SLR_Table:
 
         right.insert(item[1], ".")
         return f"{production.from_state} → {' '.join(right)}"
-    
+
     def show_closure_set(self):
         console.print(f"Num of states: {len(self.C.clourse_set)}", style="bold")
         for index, clourse in enumerate(self.C.clourse_set):
