@@ -1,6 +1,7 @@
 **/.DS_Store
 **/__pycache__
 **/.vscode
+**/.idea
 Pipfile
 Pipfile.lock
 *_test.txt
