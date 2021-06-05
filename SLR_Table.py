@@ -1,16 +1,16 @@
 import json
-from Grammar import Grammar
 from typing import Dict, List
 
 from rich.console import Console
 from rich.table import Table
 
+from Grammar import Grammar
+
 console = Console()
 
+
 class ItemSet:
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.index = 0
         self.closure_items = set()  # closure of one item
         self.transfer = dict()  # store transfer dict
@@ -54,7 +54,7 @@ class ClosureFamily:
 
         return contain
 
-    def indexOf(self, item: ItemSet) -> bool:
+    def indexOf(self, item: ItemSet) -> int:
         index = -1
         for itemset in self.clourse_set:
             if itemset.equal(item):
@@ -68,11 +68,13 @@ class ClosureFamily:
 
 
 class SLR_Table:
-    def __init__(self, grammar_file):
-        self.grammar = Grammar()
-        self.grammar.read(grammar_file)
+    def __init__(self, grammar: Grammar) -> None:
+        self.grammar = grammar
 
-        self.load_symbols()
+        self.start_symbol = grammar.start_symbol
+        self.action_symbols = grammar.terminal_symbols
+        self.goto_symbols = grammar.variable_symbols[1:]
+        self.all_symbols = self.action_symbols + self.goto_symbols
 
         self.all_items = list()
         self.first_items = dict()  # item with first dot, key is from_state
@@ -82,14 +84,6 @@ class SLR_Table:
 
         self.first = self.first_set()
         self.follow = self.follow_set()
-
-    def load_symbols(self):
-        with open("action_table_symbols.json") as f:
-            self.action_symbols = json.load(f)
-        with open("goto_table_symbols.json") as f:
-            self.goto_symbols = json.load(f)
-
-        self.all_symbols = self.action_symbols + self.goto_symbols
 
     def show_item(self, item: tuple):
         production = self.grammar.production_list[item[0]]
@@ -169,7 +163,7 @@ class SLR_Table:
         for from_state in self.first_items.keys():
             follow[from_state] = set()
 
-        follow["S"].add("$")  # for begin symbol, add '$'
+        follow[self.start_symbol].add("$")  # for begin symbol, add '$'
 
         for production in self.grammar.production_list:
             items = production.items
@@ -244,19 +238,12 @@ class SLR_Table:
         C = ClosureFamily()
         C.add(self.get_clourse(start))
 
-        with open("action_table_symbols.json") as f:
-            action_symbols = json.load(f)
-        with open("goto_table_symbols.json") as f:
-            goto_symbols = json.load(f)
-
-        all_symbol = action_symbols + goto_symbols
-
         queue = [clourse for clourse in C.clourse_set]
         index = 1
         while queue:
             clourse = queue.pop(0)
 
-            for symbol in all_symbol:
+            for symbol in self.all_symbols:
                 next = self.goto(clourse, symbol)
                 if len(next.closure_items) != 0 and not C.exists(next):  # if next_state not in closure set
                     next.set_index(index)
@@ -296,7 +283,7 @@ class SLR_Table:
                             goto[clourse.get_index()][symbol.value] = next_index
 
                 else:  # item[1] == len(production.items) , dot at the end
-                    if production.from_state == "S":
+                    if production.from_state == self.start_symbol:
                         action[clourse.get_index()]["$"] = "acc"
                     else:
                         for f in self.follow[production.from_state]:
@@ -309,12 +296,10 @@ class SLR_Table:
             f.write(json.dumps(goto))
 
 
+def print_slr_table(grammar: Grammar) -> None:
+    action_table_symbols: List[str] = grammar.terminal_symbols
+    goto_table_symbols: List[str] = grammar.variable_symbols[1:]
 
-def print_slr_table() -> None:
-    with open("action_table_symbols.json", "r") as f:
-        action_table_symbol_list: List[str] = json.loads(f.read())
-    with open("goto_table_symbols.json", "r") as f:
-        goto_table_symbol_list: List[str] = json.loads(f.read())
     with open("action_table.json", "r") as f:
         action_table: List[Dict[str, str]] = json.loads(f.read())
     with open("goto_table.json", "r") as f:
@@ -326,16 +311,16 @@ def print_slr_table() -> None:
     )
 
     output_table.add_column("State", justify="center")
-    for action_table_symbol in action_table_symbol_list:
+    for action_table_symbol in action_table_symbols:
         output_table.add_column(action_table_symbol, justify="center")
-    for goto_table_symbol in goto_table_symbol_list:
+    for goto_table_symbol in goto_table_symbols:
         output_table.add_column(goto_table_symbol, justify="center")
 
     for state, action_row, goto_row in zip(range(len(action_table)), action_table, goto_table):
         output_row: List[str] = [str(state)]
-        for action_symbol in action_table_symbol_list:
+        for action_symbol in action_table_symbols:
             output_row.append(action_row.get(action_symbol, ""))
-        for goto_symbol in goto_table_symbol_list:
+        for goto_symbol in goto_table_symbols:
             output_row.append(str(goto_row.get(goto_symbol, "")))
         output_table.add_row(*output_row)
 
@@ -344,6 +329,10 @@ def print_slr_table() -> None:
 
 
 if __name__ == "__main__":
-    slr = SLR_Table("grammar_test.txt")
+    grammar = Grammar()
+    grammar.read("grammar_test.txt")
+
+    slr = SLR_Table(grammar)
     slr.analysis_table()
-    print_slr_table()
+
+    print_slr_table(grammar)

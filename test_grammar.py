@@ -8,6 +8,9 @@ console = Console()
 grammar = Grammar()
 grammar.read("grammar.txt")
 
+console.print(f"Terminal Symbols: {grammar.terminal_symbols}")
+console.print(f"Variable Symbols: {grammar.variable_symbols}")
+
 for production in grammar.production_list:
     console.print(f"{production.from_state} →", end="")
 

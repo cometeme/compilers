@@ -1,5 +1,9 @@
 from typing import List
 
+from rich.console import Console
+
+console = Console()
+
 
 class Grammar_Item:
     is_symbol: bool  # True for terminal symbol, False for Variable
@@ -26,6 +30,9 @@ class Grammar_Production:
 
 
 class Grammar:
+    start_symbol: str
+    terminal_symbols: List[str]
+    variable_symbols: List[str]
     production_list: List[Grammar_Production]
 
     def __init__(self) -> None:
@@ -35,19 +42,25 @@ class Grammar:
         with open(path, "r") as f:
             lines = f.read().split("\n")
 
+        self.terminal_symbols = lines[0].split(" ")
+        self.variable_symbols = lines[1].split(" ")
+        self.start_symbol = self.variable_symbols[0]
+
+        lines = lines[3:]
+
         for line in lines:
             from_state, production = line.split(" → ")
-            from_state = from_state[1:]  # strip '#'
 
             current_grammar_production = Grammar_Production(from_state)
             items = production.split(" ")
 
             for item in items:
-                if item.startswith("#"):
-                    # variable
-                    current_grammar_production.add(False, item[1:])
-                else:
-                    # symbol
+                if item in self.terminal_symbols:
                     current_grammar_production.add(True, item)
+                elif item in self.variable_symbols:
+                    current_grammar_production.add(False, item)
+                else:
+                    console.print(f"Unknown symbol '{item}' in grammar file", style="bold red")
+                    exit(-1)
 
             self.production_list.append(current_grammar_production)
