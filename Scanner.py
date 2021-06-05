@@ -327,7 +327,7 @@ class Scanner:
                     next_state = to_state
                     break
 
-            self.state_output.add_row(str(self.pnt), cur, f"{current_state} -> {next_state}")
+            self.state_output.add_row(str(self.pnt), cur, f"{current_state.name} -> {next_state.name}")
 
             if next_state == Scanner_State.ERROR:
                 self.output()
