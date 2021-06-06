@@ -111,12 +111,16 @@ class SLR_Table:
 
     def save(self) -> None:
         with open("output/first_set.txt", "w") as f:
-            first = pformat(self.first, indent=2)
-            f.write(first)
+            result = dict()
+            for k in self.first:
+                result[f"first({k})"] = self.first[k]
+            f.write(pformat(result, indent=2))
 
         with open("output/follow_set.txt", "w") as f:
-            follow = pformat(self.follow, indent=2)
-            f.write(follow)
+            result = dict()
+            for k in self.follow:
+                result[f"follow({k})"] = self.follow[k]
+            f.write(pformat(result, indent=2))
 
         with open("output/closure_set.txt", "w") as f:
             result: Dict[str, List[str]] = dict()
