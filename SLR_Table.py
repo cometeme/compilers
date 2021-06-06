@@ -111,25 +111,19 @@ class SLR_Table:
 
     def save(self) -> None:
         with open("output/first_set.txt", "w") as f:
-            result = dict()
             for k in self.first:
-                result[f"first({k})"] = self.first[k]
-            f.write(pformat(result, indent=2))
+                f.write(f"first({k}) = {self.first[k]}\n")
 
         with open("output/follow_set.txt", "w") as f:
-            result = dict()
             for k in self.follow:
-                result[f"follow({k})"] = self.follow[k]
-            f.write(pformat(result, indent=2))
+                f.write(f"follow({k}) = {self.follow[k]}\n")
 
         with open("output/closure_set.txt", "w") as f:
-            result: Dict[str, List[str]] = dict()
             for index, clourse in enumerate(self.C.clourse_set):
-                result[f"I{clourse.index}"] = []
+                f.write(f"I{index}\n")
                 for item in clourse.closure_items:
-                    result[f"I{clourse.index}"].append(self.get_item(item))
-            result_string = pformat(result, indent=2)
-            f.write(result_string)
+                    f.write(f"{self.get_item(item)}\n")
+                f.write("\n")
 
         save_slr_table(self.grammar)
 
