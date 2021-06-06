@@ -1,0 +1,2 @@
+int abc;
+float def;

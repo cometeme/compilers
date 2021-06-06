@@ -12,11 +12,15 @@ if __name__ == "__main__":
     symbol_table = Symbol_Table()
 
     # run scanner
-    with open("input.txt", "r") as f:
+    with open("input/input.txt", "r") as f:
         scanner = Scanner(f.read(), symbol_table)
 
     while scanner.has_next():
         token: Token = scanner.get_next()
 
     # print results
-    scanner.output()
+    scanner.print_states()
+    scanner.print_tokens()
+
+    symbol_table.save()
+    scanner.save()

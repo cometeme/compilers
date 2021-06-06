@@ -1,0 +1,21 @@
+TerminalSymbols: id int float ; $
+VariableSymbols: P' P M D N S L
+
+@ P' → P
+@ P → M D
+@ M → ε
+offset = 0
+
+@ D → L id ; N D
+@ N → ε
+idx = attributes[-2]["entry"]
+self.symbol_table.table[idx].item_type = item_type_translate[attributes[-3]["type"]]
+self.gen_code(f"Alloc [{offset},{offset+4}] for {self.symbol_table.table[idx].name}")
+offset += 4
+
+@ D → ε
+@ L → int
+current_attribute["type"] = 'int'
+
+@ L → float
+current_attribute["type"] = 'float'

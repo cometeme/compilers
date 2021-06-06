@@ -7,3 +7,4 @@ Pipfile.lock
 *_test.txt
 action_table.json
 goto_table.json
+/output/*

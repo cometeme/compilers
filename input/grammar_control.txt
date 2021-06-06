@@ -1,0 +1,61 @@
+TerminalSymbols: id ; if while ( ) > = $
+VariableSymbols: P' P M S C Q E
+
+@ P' → P
+@ P → M S
+self.back_patch(attributes[-1]["nextlist"], attributes[-2]["instr"])
+@ M → ε
+offset = 0
+current_attribute["instr"] = self.current_line
+
+
+@ S → S ; Q S
+self.back_patch(attributes[-4]["nextlist"], attributes[-2]["instr"])
+current_attribute["nextlist"] = attributes[-1]["nextlist"]
+
+@ S → ε
+current_attribute["nextlist"] = []
+
+@ S → E
+idx = attributes[-1]["entry"]
+name = self.symbol_table.table[idx].name
+self.gen_code(f"appearance of {name}")
+current_attribute["nextlist"] = [self.current_line]
+
+@ S → if ( C ) Q S
+truelist = attributes[-4]["truelist"]
+falselist = attributes[-4]["falselist"]
+instr = attributes[-2]["instr"]
+self.back_patch(truelist, instr)
+nextlist_s1 = attributes[-1]["nextlist"]
+current_attribute["nextlist"] = self.merge(falselist, nextlist_s1)
+
+@ S → while Q ( C ) Q S
+self.back_patch(attributes[-1]["nextlist"], attributes[-6]["instr"])
+self.back_patch(attributes[-4]["truelist"], attributes[-2]["instr"])
+current_attribute["nextlist"] = attributes[-4]["falselist"]
+idx = attributes[-6]["instr"]
+self.gen_code(f"goto {idx}")
+
+
+@ Q → ε
+current_attribute["instr"] = self.current_line
+
+@ C → E > E
+current_attribute["truelist"] = self.make_list(self.current_line)
+current_attribute["falselist"] = self.make_list(self.current_line + 1)
+
+idx1 = attributes[-3]["entry"]
+idx2 = attributes[-1]["entry"]
+name1 = self.symbol_table.table[idx1].name
+name2 = self.symbol_table.table[idx2].name
+
+self.gen_code(f"if {name1} > {name2} goto ")
+self.gen_code(f"goto ")
+
+
+@ E → id
+attributes[-1]["value"] = 1
+current_attribute["value"] = attributes[-1]["value"]
+current_attribute["entry"] = attributes[-1]["entry"]
+

@@ -1,5 +1,7 @@
+import csv
 from enum import Enum, auto
 from string import ascii_letters, digits, printable
+from typing import List
 
 from rich.console import Console
 from rich.table import Table
@@ -233,6 +235,8 @@ class Scanner:
     code: str
     length: int
     symbol_table: Symbol_Table
+    state_output: List[List[str]]
+    token_output: List[List[str]]
 
     def __init__(self, code: str, symbol_table: Symbol_Table) -> None:
         """init the scanner
@@ -246,28 +250,49 @@ class Scanner:
         self.code = self.code + "\0"  # add '\0' at the end for convenience
         self.length = len(self.code)
         self.symbol_table = symbol_table
-        # init state output table
-        self.state_output = Table(
-            show_header=True,
-            header_style="bold",
-        )
-        self.state_output.add_column("Pointer", justify="center")
-        self.state_output.add_column("Current Character", justify="center")
-        self.state_output.add_column("State Transfer", justify="left")
-        # init token output table
-        self.token_output = Table(
-            show_header=True,
-            header_style="bold",
-        )
-        self.token_output.add_column("Type", justify="center")
-        self.token_output.add_column("Content", justify="center")
+        self.state_output = []
+        self.token_output = []
 
-    def output(self) -> None:
-        self.symbol_table.output()
+    def print_states(self) -> None:
+        output_table = Table(
+            show_header=True,
+            header_style="bold",
+        )
+        output_table.add_column("Pointer", justify="center")
+        output_table.add_column("Current Character", justify="center")
+        output_table.add_column("State Transfer", justify="left")
+
+        for row in self.state_output:
+            output_table.add_row(*row)
+
         console.print("Scanner States:", style="bold")
-        console.print(self.state_output)
+        console.print(output_table)
+
+    def print_tokens(self) -> None:
+        output_table = Table(
+            show_header=True,
+            header_style="bold",
+        )
+        output_table.add_column("Type", justify="center")
+        output_table.add_column("Content", justify="center")
+
+        for row in self.token_output:
+            output_table.add_row(*row)
+
         console.print("Tokens:", style="bold")
-        console.print(self.token_output)
+        console.print(output_table)
+
+    def save(self) -> None:
+        with open("output/scanner_states.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Pointer", "Current Character", "State Transfer"])
+            for row in self.state_output:
+                writer.writerow(row)
+        with open("output/token_table.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Type", "Content"])
+            for row in self.token_output:
+                writer.writerow(row)
 
     def has_next(self) -> bool:
         """check whether the scanner has next token to output
@@ -319,19 +344,20 @@ class Scanner:
                         else:
                             result.content = None
 
-                        self.token_output.add_row(
-                            result.token_type.name, "" if result.content is None else str(result.content)
+                        self.token_output.append(
+                            [result.token_type.name, "" if result.content is None else str(result.content)]
                         )
                         return result
 
                     next_state = to_state
                     break
 
-            self.state_output.add_row(str(self.pnt), cur, f"{current_state.name} -> {next_state.name}")
+            self.state_output.append([str(self.pnt), cur, f"{current_state.name} -> {next_state.name}"])
 
             if next_state == Scanner_State.ERROR:
-                self.output()
-                print("ERROR WHEN GETTING NEXT TOKEN!")
+                self.print_tokens()
+                self.print_states()
+                console.print("ERROR WHEN GETTING NEXT TOKEN!", style="bold red")
                 exit(-1)
 
             # step to next state

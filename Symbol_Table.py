@@ -1,3 +1,4 @@
+import csv
 from enum import Enum, auto
 from typing import List, Union
 
@@ -10,6 +11,9 @@ console = Console()
 class Table_Item_Type(Enum):
     INT = auto()
     FLOAT = auto()
+
+
+item_type_translate = {"int": Table_Item_Type.INT, "float": Table_Item_Type.FLOAT}
 
 
 class Table_Item:
@@ -51,6 +55,19 @@ class Symbol_Table:
         console.print("Symbol Table:", style="bold")
         console.print(output_table)
 
+    def save(self) -> None:
+        with open("output/symbol_table.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Name", "Var/Const", "Type"])
+            for item in self.table:
+                writer.writerow(
+                    [
+                        item.name,
+                        "Var" if item.variable else "Const",
+                        "" if item.item_type is None else item.item_type.name,
+                    ]
+                )
+
     def get_size(self) -> int:
         return self.size
 
@@ -65,10 +82,3 @@ class Symbol_Table:
         self.size += 1
         self.table.append(item)
         return self.size - 1
-
-    def get_item_by_index(self, idx: int) -> Table_Item:
-        if idx < 0 or idx > self.size:
-            print("Index out of range in Symbol Table")
-            exit(-1)
-
-        return self.table[idx]

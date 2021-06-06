@@ -1,0 +1,10 @@
+TerminalSymbols: id + * ( ) $
+VariableSymbols: S E F T
+
+@ S → E
+@ E → E + T
+@ E → T
+@ T → T * F
+@ T → F
+@ F → ( E )
+@ F → id

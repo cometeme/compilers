@@ -1,0 +1,167 @@
+TerminalSymbols: id const int float if else while > < == = + - * / ( ) ; $
+VariableSymbols: P' P D S L C E T F M N Q
+
+@ P' → P
+@ P → M D S
+self.back_patch(attributes[-1]["nextlist"], attributes[-3]["instr"])
+
+@ M → ε
+offset = 0
+temp_index = 0
+current_attribute["instr"] = self.current_line
+
+@ D → L id ; N D
+@ N → ε
+idx = attributes[-2]["entry"]
+self.symbol_table.table[idx].item_type = item_type_translate[attributes[-3]["type"]]
+width = attributes[-3]["width"]
+self.gen_code(f"Alloc [{offset},{offset+width}] for {self.symbol_table.table[idx].name}")
+offset += width
+
+@ D → ε
+@ L → int
+current_attribute["type"] = 'int'
+current_attribute["width"] = 4
+
+@ L → float
+current_attribute["type"] = 'float'
+current_attribute["width"] = 4
+
+@ S → S ; Q S
+self.back_patch(attributes[-4]["nextlist"], attributes[-2]["instr"])
+current_attribute["nextlist"] = attributes[-1]["nextlist"]
+
+@ Q → ε
+current_attribute["instr"] = self.current_line
+
+@ S → ε
+current_attribute["nextlist"] = []
+
+@ S → id = E
+entry0 = attributes[-3]["entry"]
+name0 = self.symbol_table.table[entry0].name
+entry1 = attributes[-1]["entry"]
+name1 = self.symbol_table.table[entry1].name
+self.gen_code(f"{name0} = {name1}")
+
+current_attribute["nextlist"] = [self.current_line]
+
+@ S → if ( C ) Q S
+truelist = attributes[-4]["truelist"]
+falselist = attributes[-4]["falselist"]
+instr = attributes[-2]["instr"]
+self.back_patch(truelist, instr)
+nextlist_s1 = attributes[-1]["nextlist"]
+current_attribute["nextlist"] = self.merge(falselist, nextlist_s1)
+
+@ S → while Q ( C ) Q S
+self.back_patch(attributes[-1]["nextlist"], attributes[-6]["instr"])
+self.back_patch(attributes[-4]["truelist"], attributes[-2]["instr"])
+current_attribute["nextlist"] = attributes[-4]["falselist"]
+idx = attributes[-6]["instr"]
+self.gen_code(f"goto {idx}")
+
+@ C → E > E
+current_attribute["truelist"] = self.make_list(self.current_line)
+current_attribute["falselist"] = self.make_list(self.current_line + 1)
+
+idx1 = attributes[-3]["entry"]
+idx2 = attributes[-1]["entry"]
+name1 = self.symbol_table.table[idx1].name
+name2 = self.symbol_table.table[idx2].name
+
+self.gen_code(f"if {name1} > {name2} goto ")
+self.gen_code(f"goto ")
+
+@ C → E < E
+current_attribute["truelist"] = self.make_list(self.current_line)
+current_attribute["falselist"] = self.make_list(self.current_line + 1)
+
+idx1 = attributes[-3]["entry"]
+idx2 = attributes[-1]["entry"]
+name1 = self.symbol_table.table[idx1].name
+name2 = self.symbol_table.table[idx2].name
+
+self.gen_code(f"if {name1} < {name2} goto ")
+self.gen_code(f"goto ")
+
+
+@ C → E == E
+current_attribute["truelist"] = self.make_list(self.current_line)
+current_attribute["falselist"] = self.make_list(self.current_line + 1)
+
+idx1 = attributes[-3]["entry"]
+idx2 = attributes[-1]["entry"]
+name1 = self.symbol_table.table[idx1].name
+name2 = self.symbol_table.table[idx2].name
+
+self.gen_code(f"if {name1} == {name2} goto ")
+self.gen_code(f"goto ")
+
+
+@ E → E + T
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} + {name2}")
+
+@ E → E - T
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} - {name2}")
+
+@ E → T
+current_attribute["entry"] = attributes[-1]["entry"]
+
+@ T → F
+current_attribute["entry"] = attributes[-1]["entry"]
+
+@ T → T * F
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} * {name2}")
+
+@ T → T / F
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} / {name2}")
+
+@ F → ( E )
+current_attribute["entry"] = attributes[-2]["entry"]
+
+@ F → id
+current_attribute["entry"] = attributes[-1]["entry"]
+
+@ F → const
+current_attribute["entry"] = attributes[-1]["entry"]
