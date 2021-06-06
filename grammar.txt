@@ -54,6 +54,12 @@ self.back_patch(truelist, instr)
 nextlist_s1 = attributes[-1]["nextlist"]
 current_attribute["nextlist"] = self.merge(falselist, nextlist_s1)
 
+@ S → while Q ( C ) Q S
+self.back_patch(attributes[-1]["nextlist"], attributes[-6]["instr"])
+self.back_patch(attributes[-4]["truelist"], attributes[-2]["instr"])
+current_attribute["nextlist"] = attributes[-4]["falselist"]
+idx = attributes[-6]["instr"]
+self.gen_code(f"goto {idx}")
 
 @ C → E > E
 current_attribute["truelist"] = self.make_list(self.current_line)
