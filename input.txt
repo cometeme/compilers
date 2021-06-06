@@ -1,12 +1,16 @@
 int a;
 int b;
 float c;
-a=2;
-b=1;
-if(a>b)
-  c=a+b;
-while( a < b )
-  a = a + 1;
+
+a = 2;
+b = 1;
+c = (a + b) / 2;
+
+if (a > (b + c))
+  if (c < 12)
+    c = (a + b) * c - a / 2;
+
+while (a < b)
+  a = b + c - 1;
 
 b = a;
-
