@@ -96,23 +96,22 @@ class SLR_Automata:
         return [inst]
 
     def merge(self, l1: List, l2: List) -> List:
-        
+
         l = list()
         l.extend(l1)
-        
+
         for inst in l2:
             if inst not in l:
                 l.append(inst)
 
         return l
 
-    def back_patch(self, l : List, target: int) -> Dict:
+    def back_patch(self, l: List, target: int) -> None:
         for inst in l:
             # back patch all blank field
             if inst < len(self.code_output) - 1 and not self.code_output[inst][1][-1].isdigit():
-                if  len(self.code_output[inst][1]) >= 5 and self.code_output[inst][1][-5:-1] == "goto":
+                if len(self.code_output[inst][1]) >= 5 and self.code_output[inst][1][-5:-1] == "goto":
                     self.code_output[inst][1] += str(target)
-
 
     def run(self, debug: bool = True) -> None:
         stack: List[int] = [0]
