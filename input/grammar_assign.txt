@@ -1,0 +1,88 @@
+TerminalSymbols: id const = + - * / ( ) ; $
+VariableSymbols: P' P M S E T F
+
+@ P' → P
+
+@ P → M S
+
+@ M → ε
+offset = 0
+temp_index = 0
+
+@ S → S ; S
+
+@ S → ε
+
+@ S → id = E
+entry0 = attributes[-3]["entry"]
+name0 = self.symbol_table.table[entry0].name
+entry1 = attributes[-1]["entry"]
+name1 = self.symbol_table.table[entry1].name
+self.gen_code(f"{name0} = {name1}")
+
+@ E → E + T
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} + {name2}")
+
+@ E → E - T
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} - {name2}")
+
+@ E → T
+current_attribute["entry"] = attributes[-1]["entry"]
+
+@ T → F
+current_attribute["entry"] = attributes[-1]["entry"]
+
+@ T → T * F
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} * {name2}")
+
+@ T → T / F
+name0 = f"temp{temp_index}"
+entry = self.gen_variable(name0)
+temp_index += 1
+
+entry1 = attributes[-3]["entry"]
+name1 = self.symbol_table.table[entry1].name
+entry2 = attributes[-1]["entry"]
+name2 = self.symbol_table.table[entry2].name
+
+current_attribute["entry"] = entry
+self.gen_code(f"{name0} = {name1} / {name2}")
+
+@ F → ( E )
+current_attribute["entry"] = attributes[-2]["entry"]
+
+@ F → id
+current_attribute["entry"] = attributes[-1]["entry"]
+
+@ F → const
+current_attribute["entry"] = attributes[-1]["entry"]

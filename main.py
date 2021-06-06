@@ -31,10 +31,10 @@ if __name__ == "__main__":
 
     # init grammar
     grammar = Grammar()
-    grammar.read("grammar.txt")
+    grammar.read("input/grammar.txt")
 
     # init scanner
-    with open("input.txt", "r") as f:
+    with open("input/input.txt", "r") as f:
         code = f.read()
     scanner = Scanner(code, symbol_table)
 

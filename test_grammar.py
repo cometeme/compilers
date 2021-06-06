@@ -6,7 +6,7 @@ from Grammar import Grammar
 console = Console()
 
 grammar = Grammar()
-grammar.read("grammar.txt")
+grammar.read("input/grammar.txt")
 grammar.save()
 
 console.print(f"Terminal Symbols: {grammar.terminal_symbols}")
